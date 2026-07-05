@@ -30,6 +30,12 @@ struct MenuContentView: View {
             Button("Quitter Sentinel") {
                 NSApplication.shared.terminate(nil)
             }
+
+            Divider()
+
+            Text("Sentinel \(appVersion)")
+                .font(.caption2)
+                .foregroundStyle(.tertiary)
         }
         .padding(12)
         .frame(width: 220)
@@ -42,5 +48,13 @@ struct MenuContentView: View {
         case .down: return "\(monitor.downCount) service(s) en panne"
         case .unknown: return "État inconnu"
         }
+    }
+
+    /// `CFBundleShortVersionString` (ex. "0.1.0"), injecté par
+    /// `scripts/build_app_bundle.sh` à partir du tag git lors des builds
+    /// publiés. En dev local (`swift run`), le bundle n'a pas d'Info.plist
+    /// avec la vraie version -> "dev" plutôt qu'un champ vide/trompeur.
+    private var appVersion: String {
+        Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? "dev"
     }
 }
