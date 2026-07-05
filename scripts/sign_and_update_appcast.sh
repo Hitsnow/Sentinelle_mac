@@ -41,7 +41,17 @@ echo "==> Régénération de l'appcast à partir de tout releases/"
 # `echo "$PRIVATE_KEY_SECRET" | generate_appcast --ed-key-file -`
 # -s est déprécié et explicitement rejeté pour les clés nouvellement
 # générées ("no longer supported for newly generated keys").
-echo "$SPARKLE_PRIVATE_KEY" | "$SPARKLE_TOOLS_DIR/bin/generate_appcast" --ed-key-file - "$RELEASES_DIR"
+#
+# --download-url-prefix : sans ça, generate_appcast construit une URL de
+# téléchargement à la racine du site (https://.../SentinelMac-X.Y.Z.dmg),
+# qui n'existe pas — le .dmg est réellement servi sous /releases/ (c'est ce
+# dossier qui est committé et servi par GitHub Pages). Bug réel constaté en
+# prod : l'appcast pointait vers une URL 404, Sparkle ne voyait donc jamais
+# la mise à jour côté client malgré un appcast valide.
+echo "$SPARKLE_PRIVATE_KEY" | "$SPARKLE_TOOLS_DIR/bin/generate_appcast" \
+    --ed-key-file - \
+    --download-url-prefix "https://hitsnow.github.io/Sentinelle_mac/releases/" \
+    "$RELEASES_DIR"
 
 cp "$RELEASES_DIR/appcast.xml" "$ROOT_DIR/appcast.xml"
 echo "==> appcast.xml mis à jour"
