@@ -10,7 +10,12 @@ struct SentinelMacApp: App {
             MenuContentView(updater: updater)
                 .environmentObject(monitor)
         } label: {
+            // macOS force par défaut les icônes de barre de menu en "template"
+            // (monochrome, ignore toute couleur) — .palette est le mode de
+            // rendu SF Symbols qui échappe à ce templating automatique et
+            // affiche vraiment la couleur voulue.
             Image(systemName: monitor.overall.symbolName)
+                .symbolRenderingMode(.palette)
                 .foregroundStyle(monitor.overall.tintColor)
         }
         .menuBarExtraStyle(.window)
