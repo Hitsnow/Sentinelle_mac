@@ -8,10 +8,11 @@
 #
 # Usage : VERSION=0.1.0 SPARKLE_PRIVATE_KEY="..." ./scripts/sign_and_update_appcast.sh
 #
-# NOTE : les noms d'options exacts de `generate_appcast`/`sign_update`
-# peuvent varier légèrement selon la version de Sparkle résolue par SPM —
-# à vérifier/ajuster au premier run CI (cf. `sparkle-project/Sparkle` docs,
-# section "Publishing an Update").
+# SPARKLE_PRIVATE_KEY doit être la valeur EXPORTÉE via `generate_keys -x` sur
+# le Mac de Pierre (blob combiné privé+public, 128 caractères base64) — PAS
+# la valeur retournée par `security find-generic-password` seule, qui est
+# incomplète (confirmé en lisant generate_appcast/main.swift : la vraie
+# valeur stockée en Keychain fait 128 caractères, pas 44).
 set -euo pipefail
 
 VERSION="${VERSION:?VERSION requis}"
@@ -34,13 +35,12 @@ if [ ! -x "$SPARKLE_TOOLS_DIR/bin/generate_appcast" ]; then
     tar -xf /tmp/sparkle.tar.xz -C "$SPARKLE_TOOLS_DIR"
 fi
 
-echo "==> Écriture temporaire de la clé privée (fichier éphémère, runner CI jetable)"
-KEY_FILE=$(mktemp)
-trap 'rm -f "$KEY_FILE"' EXIT
-printf '%s' "$SPARKLE_PRIVATE_KEY" > "$KEY_FILE"
-
 echo "==> Régénération de l'appcast à partir de tout releases/"
-"$SPARKLE_TOOLS_DIR/bin/generate_appcast" --ed-key-file "$KEY_FILE" "$RELEASES_DIR"
+# -s : seul flag réel de generate_appcast pour une clé EdDSA fournie en
+# argument (confirmé dans generate_appcast/main.swift) — pas de fichier,
+# valeur directe. Le contenu du secret ne doit jamais apparaître dans les
+# logs : la commande elle-même n'est pas affichée (set -x n'est pas activé).
+"$SPARKLE_TOOLS_DIR/bin/generate_appcast" -s "$SPARKLE_PRIVATE_KEY" "$RELEASES_DIR"
 
 cp "$RELEASES_DIR/appcast.xml" "$ROOT_DIR/appcast.xml"
 echo "==> appcast.xml mis à jour"
