@@ -8,11 +8,11 @@
 #
 # Usage : VERSION=0.1.0 SPARKLE_PRIVATE_KEY="..." ./scripts/sign_and_update_appcast.sh
 #
-# SPARKLE_PRIVATE_KEY doit être la valeur EXPORTÉE via `generate_keys -x` sur
-# le Mac de Pierre (blob combiné privé+public, 128 caractères base64) — PAS
-# la valeur retournée par `security find-generic-password` seule, qui est
-# incomplète (confirmé en lisant generate_appcast/main.swift : la vraie
-# valeur stockée en Keychain fait 128 caractères, pas 44).
+# SPARKLE_PRIVATE_KEY = valeur affichée par `generate_keys -x` (peut faire 44
+# OU 128 caractères selon le format — les deux sont valides en 2.6.4, cf.
+# generate_appcast/main.swift::loadPrivateKeys "We always allow the old
+# format without private seed"). Vérifié contre le tag 2.6.4 exact de
+# Sparkle, pas la branche master (qui a un format différent, plus strict).
 set -euo pipefail
 
 VERSION="${VERSION:?VERSION requis}"
@@ -36,11 +36,12 @@ if [ ! -x "$SPARKLE_TOOLS_DIR/bin/generate_appcast" ]; then
 fi
 
 echo "==> Régénération de l'appcast à partir de tout releases/"
-# -s : seul flag réel de generate_appcast pour une clé EdDSA fournie en
-# argument (confirmé dans generate_appcast/main.swift) — pas de fichier,
-# valeur directe. Le contenu du secret ne doit jamais apparaître dans les
-# logs : la commande elle-même n'est pas affichée (set -x n'est pas activé).
-"$SPARKLE_TOOLS_DIR/bin/generate_appcast" -s "$SPARKLE_PRIVATE_KEY" "$RELEASES_DIR"
+# --ed-key-file - : lit la clé depuis stdin (readLine strippingNewline),
+# pattern documenté explicitement dans l'aide de l'outil lui-même :
+# `echo "$PRIVATE_KEY_SECRET" | generate_appcast --ed-key-file -`
+# -s est déprécié et explicitement rejeté pour les clés nouvellement
+# générées ("no longer supported for newly generated keys").
+echo "$SPARKLE_PRIVATE_KEY" | "$SPARKLE_TOOLS_DIR/bin/generate_appcast" --ed-key-file - "$RELEASES_DIR"
 
 cp "$RELEASES_DIR/appcast.xml" "$ROOT_DIR/appcast.xml"
 echo "==> appcast.xml mis à jour"
