@@ -30,8 +30,10 @@ mkdir -p "$APP_DIR/Contents/MacOS" "$APP_DIR/Contents/Resources" "$APP_DIR/Conte
 
 cp "$BIN_PATH" "$APP_DIR/Contents/MacOS/$APP_NAME"
 
-sed -e "s/0\\.0\\.0/$VERSION/" \
-    -e "s/__SPARKLE_PUBLIC_KEY__/$SPARKLE_PUBLIC_KEY/" \
+# Délimiteur "|" plutôt que "/" : l'alphabet base64 (clé Sparkle) contient des
+# "/" qui cassent la syntaxe sed habituelle ("bad flag in substitute command").
+sed -e "s|0\\.0\\.0|$VERSION|" \
+    -e "s|__SPARKLE_PUBLIC_KEY__|$SPARKLE_PUBLIC_KEY|" \
     "$ROOT_DIR/Resources/Info.plist" > "$APP_DIR/Contents/Info.plist"
 # CFBundleVersion (build number) : on réutilise VERSION sans les points pour
 # rester monotone (ex. 0.1.0 -> 010) — Sparkle compare CFBundleVersion.
