@@ -1,0 +1,35 @@
+name: Générer les clés Sparkle (une seule fois)
+
+# À lancer manuellement UNE SEULE FOIS (onglet Actions -> ce workflow -> Run
+# workflow), avant le tout premier tag v0.1.0. Affiche la clé publique et la
+# clé privée dans les logs : copier immédiatement la clé PRIVÉE dans un
+# secret GitHub Actions nommé SPARKLE_PRIVATE_KEY (Settings -> Secrets and
+# variables -> Actions), et la clé PUBLIQUE dans un secret SPARKLE_PUBLIC_KEY
+# (ce n'est pas un secret à proprement parler, mais ça évite de la committer
+# en dur). Une fois les deux secrets créés, ce workflow n'a plus besoin
+# d'être relancé — et il vaut mieux supprimer ce fichier ou au moins ne plus
+# jamais le redéclencher, pour ne pas régénérer une paire différente.
+on:
+  workflow_dispatch:
+
+jobs:
+  generate:
+    runs-on: macos-latest
+    steps:
+      - name: Télécharger les outils Sparkle
+        run: |
+          SPARKLE_VERSION="2.6.4"
+          curl -L -o /tmp/sparkle.tar.xz \
+            "https://github.com/sparkle-project/Sparkle/releases/download/${SPARKLE_VERSION}/Sparkle-${SPARKLE_VERSION}.tar.xz"
+          mkdir -p /tmp/sparkle-tools
+          tar -xf /tmp/sparkle.tar.xz -C /tmp/sparkle-tools
+
+      - name: Générer la paire de clés EdDSA
+        run: |
+          echo "=================================================================="
+          echo "COPIE IMMEDIATEMENT les deux clés ci-dessous dans des secrets"
+          echo "GitHub Actions (Settings > Secrets and variables > Actions) :"
+          echo "  SPARKLE_PRIVATE_KEY = clé privée"
+          echo "  SPARKLE_PUBLIC_KEY  = clé publique"
+          echo "=================================================================="
+          /tmp/sparkle-tools/bin/generate_keys

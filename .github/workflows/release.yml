@@ -1,0 +1,54 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - "v*"
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Extraire la version depuis le tag
+        id: version
+        run: echo "version=${GITHUB_REF_NAME#v}" >> "$GITHUB_OUTPUT"
+
+      - name: Résoudre les dépendances SPM (Sparkle)
+        run: swift package resolve
+
+      - name: Construire le bundle .app
+        env:
+          VERSION: ${{ steps.version.outputs.version }}
+          SPARKLE_PUBLIC_KEY: ${{ secrets.SPARKLE_PUBLIC_KEY }}
+        run: ./scripts/build_app_bundle.sh
+
+      - name: Créer le .dmg
+        env:
+          VERSION: ${{ steps.version.outputs.version }}
+        run: ./scripts/build_dmg.sh
+
+      - name: Signer et régénérer appcast.xml
+        env:
+          VERSION: ${{ steps.version.outputs.version }}
+          SPARKLE_PRIVATE_KEY: ${{ secrets.SPARKLE_PRIVATE_KEY }}
+        run: ./scripts/sign_and_update_appcast.sh
+
+      - name: Publier la GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: build/SentinelMac-${{ steps.version.outputs.version }}.dmg
+
+      - name: Committer releases/ et appcast.xml mis à jour
+        run: |
+          git config user.name "sentinel-ci"
+          git config user.email "ci@sentinel.local"
+          git add releases/ appcast.xml
+          git commit -m "Release ${{ github.ref_name }}: mise à jour appcast + archive dmg" || echo "rien à committer"
+          git push origin HEAD:main

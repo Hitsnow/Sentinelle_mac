@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>CFBundleIdentifier</key>
+	<string>com.hitsnow.SentinelMac</string>
+	<key>CFBundleName</key>
+	<string>Sentinel</string>
+	<key>CFBundleDisplayName</key>
+	<string>Sentinel</string>
+	<key>CFBundleExecutable</key>
+	<string>SentinelMac</string>
+	<key>CFBundlePackageType</key>
+	<string>APPL</string>
+	<!-- Remplacés par scripts/build_app_bundle.sh à partir du tag git (ex. v0.1.0) -->
+	<key>CFBundleShortVersionString</key>
+	<string>0.0.0</string>
+	<key>CFBundleVersion</key>
+	<string>0</string>
+	<key>LSMinimumSystemVersion</key>
+	<string>13.0</string>
+	<!-- App barre de menu uniquement : pas d'icône Dock, pas de fenêtre au lancement -->
+	<key>LSUIElement</key>
+	<true/>
+	<!-- Sentinel est joignable en HTTP simple via l'IP tailscale de fsociety
+	     (réseau privé, pas de certificat TLS) : exception ATS scopée à cet
+	     hôte plutôt qu'un NSAllowsArbitraryLoads global. -->
+	<key>NSAppTransportSecurity</key>
+	<dict>
+		<key>NSExceptionDomains</key>
+		<dict>
+			<key>100.119.170.12</key>
+			<dict>
+				<key>NSExceptionAllowsInsecureHTTPLoads</key>
+				<true/>
+			</dict>
+		</dict>
+	</dict>
+	<!-- Sparkle : URL de l'appcast (publié sur GitHub Pages du repo) et clé
+	     publique EdDSA. La clé réelle est injectée par scripts/build_app_bundle.sh
+	     à partir du secret SPARKLE_PUBLIC_KEY (pas un secret à proprement
+	     parler : c'est la clé PUBLIQUE, sûre à committer, mais gérée comme
+	     un placeholder ici tant que la paire n'a pas été générée). -->
+	<key>SUFeedURL</key>
+	<string>https://hitsnow.github.io/Sentinelle_mac/appcast.xml</string>
+	<key>SUPublicEDKey</key>
+	<string>__SPARKLE_PUBLIC_KEY__</string>
+	<key>SUEnableAutomaticChecks</key>
+	<true/>
+	<key>NSPrincipalClass</key>
+	<string>NSApplication</string>
+</dict>
+</plist>
