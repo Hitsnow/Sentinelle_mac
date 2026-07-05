@@ -14,9 +14,9 @@ struct SentinelMacApp: App {
             // (monochrome, ignore toute couleur) — .palette est le mode de
             // rendu SF Symbols qui échappe à ce templating automatique et
             // affiche vraiment la couleur voulue.
-            Image(systemName: monitor.overall.symbolName)
+            Image(systemName: monitor.displaySymbolName)
                 .symbolRenderingMode(.palette)
-                .foregroundStyle(monitor.overall.tintColor)
+                .foregroundStyle(monitor.displayColor)
         }
         .menuBarExtraStyle(.window)
 

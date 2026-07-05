@@ -7,13 +7,9 @@ struct MenuContentView: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: 8) {
-            Label(summaryText, systemImage: monitor.overall.symbolName)
-                .foregroundStyle(monitor.overall.tintColor)
+            Label(summaryText, systemImage: monitor.displaySymbolName)
+                .foregroundStyle(monitor.displayColor)
                 .font(.headline)
-
-            Text(monitor.connected ? "Connecté" : "Déconnecté")
-                .font(.caption)
-                .foregroundStyle(.secondary)
 
             Divider()
 
@@ -42,6 +38,7 @@ struct MenuContentView: View {
     }
 
     private var summaryText: String {
+        guard monitor.connected else { return "Déconnecté (dernier état affiché)" }
         switch monitor.overall {
         case .healthy: return "Tout va bien"
         case .degraded: return "\(monitor.degradedCount) service(s) dégradé(s)"

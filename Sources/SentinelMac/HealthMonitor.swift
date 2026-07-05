@@ -48,6 +48,13 @@ final class HealthMonitor: ObservableObject {
     @Published private(set) var degradedCount = 0
     @Published private(set) var connected = false
 
+    /// Icône affichée dans la barre de menu : le jaune prime sur le statut de
+    /// santé quand on est déconnecté, car les données affichées (`overall`)
+    /// sont alors potentiellement périmées — pas fiable de continuer à
+    /// afficher un vert/rouge qu'on ne peut plus garantir à jour.
+    var displaySymbolName: String { connected ? overall.symbolName : "wifi.slash" }
+    var displayColor: Color { connected ? overall.tintColor : .yellow }
+
     private var statuses: [String: ServiceStatus] = [:]
     private var sseTask: Task<Void, Never>?
     private let sse = SSEClient(url: Config.eventsURL)
